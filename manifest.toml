@@ -1,0 +1,10 @@
+manifest_version = 1
+
+[module]
+name = "Better embeds"
+id = "better_embeds"
+description = "A module improving various embeds."
+version = "0.0.1"
+license = "GNU GPLv3"
+authors = ["Fripe"]
+requirements=["aiohttp"]
