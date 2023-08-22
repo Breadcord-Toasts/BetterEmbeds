@@ -6,7 +6,7 @@ import breadcord
 from .constants import GITHUB_LINE_NUMBER_URL_REGEX
 
 
-class BreadAssassin(breadcord.module.ModuleCog):
+class BetterEmbeds(breadcord.module.ModuleCog):
     def __init__(self, module_id: str):
         super().__init__(module_id)
         self.session: aiohttp.ClientSession | None = None
@@ -59,4 +59,4 @@ class BreadAssassin(breadcord.module.ModuleCog):
 
 
 async def setup(bot: breadcord.Bot):
-    await bot.add_cog(BreadAssassin("better_embeds"))
+    await bot.add_cog(BetterEmbeds("better_embeds"))
