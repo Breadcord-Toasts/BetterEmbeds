@@ -1,4 +1,3 @@
-import aiohttp
 import discord
 from discord.ext import commands
 
@@ -17,19 +16,10 @@ class DeleteView(discord.ui.View):
         await interaction.message.delete()
 
 
-class BetterEmbeds(breadcord.module.ModuleCog):
+class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
     def __init__(self, module_id: str):
         super().__init__(module_id)
-        self.session: aiohttp.ClientSession | None = None
-
         self.bot.add_view(DeleteView())
-
-    async def cog_load(self) -> None:
-        self.session = aiohttp.ClientSession()
-
-    async def cog_unload(self):
-        if self.session is not None:
-            await self.session.close()
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -60,11 +50,13 @@ class BetterEmbeds(breadcord.module.ModuleCog):
                 lines = (await response.text()).splitlines()
 
             l1 = int(l1) - 1
-            l2 = int(l2) - 1 if l2 else l1
-            code = "\n".join(lines[l1 : l2 + 1])
+            l2 = (int(l2) - 1 if l2 else l1) + 1
+            linked_lines = lines[l1:l2]
+            indent = min(len(line) - len(line.lstrip()) for line in linked_lines if line.strip())
+            code = "\n".join(line[indent:] for line in linked_lines)
             codeblock = f"```{file_ext or ''}\n{code}\n```"
 
-            if code and len(codeblock) > 2000:
+            if not code or len(codeblock) > 2000:
                 return
             view = DeleteView()
             await message.reply(
