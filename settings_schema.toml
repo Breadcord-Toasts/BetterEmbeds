@@ -2,5 +2,6 @@
 github = true
 github_token = ""
 
+message_links = true
 
 

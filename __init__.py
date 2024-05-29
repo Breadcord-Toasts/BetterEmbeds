@@ -3,7 +3,7 @@ from discord.ext import commands
 
 import breadcord
 from breadcord.helpers import simple_button
-from .constants import GITHUB_LINE_NUMBER_URL_REGEX
+from .constants import GITHUB_LINE_NUMBER_URL_REGEX, DISCORD_MESSAGE_URL_REGEX
 
 
 class DeleteView(discord.ui.View):
@@ -23,15 +23,18 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
+        if not message.content or message.author.bot:
+            return
+
         def is_enabled(setting_key: str) -> bool:
             return self.settings.get(setting_key).value
 
         if is_enabled("github"):
             await self.handle_github_url(message)
+        if is_enabled("message_links"):
+            await self.handle_message_url(message)
 
     async def handle_github_url(self, message: discord.Message) -> None:
-        if not message.content or message.author.bot:
-            return
         for match in GITHUB_LINE_NUMBER_URL_REGEX.finditer(message.content):
             owner, repo, branch, file_path, file_ext, l1, l2 = match.groupdict().values()
             if not all((owner, repo, branch, file_path, l1)):
@@ -61,6 +64,34 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
             view = DeleteView()
             await message.reply(
                 codeblock,
+                mention_author=False,
+                view=view,
+            )
+
+    async def handle_message_url(self, message: discord.Message) -> None:
+        for match in DISCORD_MESSAGE_URL_REGEX.finditer(message.content):
+            guild_id, channel_id, message_id = match.groups()
+            if not guild_id or not channel_id or not message_id:
+                continue
+
+            try:
+                guild = self.bot.get_guild(int(guild_id))
+                channel = guild.get_channel(int(channel_id))
+                linked_message = await channel.fetch_message(int(message_id))
+            except (AttributeError, discord.NotFound):
+                continue
+
+            view = DeleteView()
+            await message.reply(
+                embed=discord.Embed(
+                    title=f"Message in {channel.mention}",
+                    description=linked_message.content,
+                    color=message.author.color,
+                    timestamp=linked_message.created_at,
+                ).set_author(
+                    name=linked_message.author.display_name,
+                    icon_url=linked_message.author.avatar.url if linked_message.author.avatar else None
+                ),
                 mention_author=False,
                 view=view,
             )

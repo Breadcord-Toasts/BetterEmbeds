@@ -14,8 +14,31 @@ GITHUB_LINE_NUMBER_URL_REGEX = re.compile(
     (?P<file_path>.+?)                  # File path
     (?:\.(?P<file_ext>\w+))?            # Optional file extension
     (?:\?.+)?                           # Optional query string
-    \#L(?P<l1>\d+)                      # Line number
-    (?:-L(?P<l2>\d+))?                  # Optional ending line number
+    \#L(?P<l1>[0-9]+)                      # Line number
+    (?:-L(?P<l2>[0-9]+))?                  # Optional ending line number
+    (?:
+        (?!\S)                          # Discard any match followed by a non-space character
+        |                               # Or
+        (?=>)                           # Discard any match not followed by a ">" character
+    )
+    """,
+    flags=re.VERBOSE
+)
+
+DISCORD_MESSAGE_URL_REGEX = re.compile(
+    r"""
+    (?:
+        (?<!\S)                         # Discard any match proceded by a non-space character
+        |                               # Or
+        (?<=<)                          # Discard any match not proceded by a "<" character
+    )
+    https://
+    (?:ptb\.|canary\.)?                 # Optional PTB or Canary subdomain
+    discord.com/channels/
+    ([0-9]+)/                           # Guild ID
+    ([0-9]+)/                           # Channel ID
+    ([0-9]+)                            # Message ID
+    /?
     (?:
         (?!\S)                          # Discard any match followed by a non-space character
         |                               # Or
