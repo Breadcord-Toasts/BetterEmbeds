@@ -97,5 +97,5 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
             )
 
 
-async def setup(bot: breadcord.Bot):
-    await bot.add_cog(BetterEmbeds("better_embeds"))
+async def setup(bot: breadcord.Bot, module: breadcord.module.Module) -> None:
+    await bot.add_cog(BetterEmbeds(module.id))
