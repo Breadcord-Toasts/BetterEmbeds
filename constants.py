@@ -48,5 +48,4 @@ DISCORD_MESSAGE_URL_REGEX = re.compile(
     flags=re.VERBOSE
 )
 
-
-
+SPOTIFY_TRACK_URL_REGEX = re.compile(r"https?://open\.spotify\.com/track/(?P<id>\w+)")

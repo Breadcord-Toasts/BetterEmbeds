@@ -1,9 +1,12 @@
+import datetime
+
 import discord
 from discord.ext import commands
 
 import breadcord
 from breadcord.helpers import simple_button
-from .constants import GITHUB_LINE_NUMBER_URL_REGEX, DISCORD_MESSAGE_URL_REGEX
+from .constants import GITHUB_LINE_NUMBER_URL_REGEX, DISCORD_MESSAGE_URL_REGEX, SPOTIFY_TRACK_URL_REGEX
+from .spotify import SpotifyAPI, BadResponseError
 
 
 class DeleteView(discord.ui.View):
@@ -20,6 +23,11 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
     def __init__(self, module_id: str):
         super().__init__(module_id)
         self.bot.add_view(DeleteView())
+        self.spotify_api: SpotifyAPI | None = None
+
+    async def cog_load(self) -> None:
+        await super().cog_load()
+        self.spotify_api = SpotifyAPI(session=self.session, settings=self.settings)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -33,6 +41,8 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
             await self.handle_github_url(message)
         if is_enabled("message_links"):
             await self.handle_message_url(message)
+        if self.settings.spotify.enabled.value:
+            await self.handle_spotify_url(message)
 
     async def handle_github_url(self, message: discord.Message) -> None:
         for match in GITHUB_LINE_NUMBER_URL_REGEX.finditer(message.content):
@@ -94,6 +104,39 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                 ),
                 mention_author=False,
                 view=view,
+            )
+
+    async def handle_spotify_url(self, message: discord.Message) -> None:
+        for match in SPOTIFY_TRACK_URL_REGEX.finditer(message.content):
+            track_id = match.group("id")
+            try:
+                track = await self.spotify_api.fetch_track_data(track_id)
+            except BadResponseError:
+                continue
+
+            def delta_to_str(delta: datetime.timedelta) -> str:
+                parts: list[str] = str(delta).split(":")
+                if parts[0] == "0":
+                    parts = parts[1:]
+                return ":".join(parts)
+
+            await message.reply(
+                embed=(
+                    discord.Embed(
+                        title=(":underage: " if track["explicit"] else "") + track["name"],
+                        url=track["external_urls"]["spotify"],
+                        description="\n".join(line for line in (
+                            "**Artists:** " + ", ".join([artist["name"] for artist in track["artists"]]),
+                            f"**Album:** {track['album']['name']}" if track["album"]["total_tracks"] > 1 else None,
+                            f"**Length:** {delta_to_str(datetime.timedelta(milliseconds=track['duration_ms']))}",
+                        ) if line is not None),
+                    )
+                    .set_thumbnail(url=max(
+                        track["album"]["images"],
+                        key=lambda image: image.get("width", 0) * image.get("height", 0)
+                    )["url"])
+                ),
+                view=DeleteView(),
             )
 
 

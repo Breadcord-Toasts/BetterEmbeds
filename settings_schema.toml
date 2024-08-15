@@ -5,3 +5,12 @@ github_token = ""
 message_links = true
 
 
+[spotify]
+enabled = false
+
+# Used to obtain an api key
+# https://developer.spotify.com/documentation/web-api/tutorials/getting-started#create-an-app
+client_id = ""
+# Used to obtain an api key
+# https://developer.spotify.com/documentation/web-api/tutorials/getting-started#create-an-app
+client_secret = ""
