@@ -128,7 +128,7 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                         description="\n".join(line for line in (
                             "**Artists:** " + ", ".join([artist["name"] for artist in track["artists"]]),
                             f"**Album:** {track['album']['name']}" if track["album"]["total_tracks"] > 1 else None,
-                            f"**Length:** {delta_to_str(datetime.timedelta(milliseconds=track['duration_ms']))}",
+                            f"**Length:** {delta_to_str(datetime.timedelta(seconds=int(track['duration_ms'] / 1000)))}",
                         ) if line is not None),
                     )
                     .set_thumbnail(url=max(
