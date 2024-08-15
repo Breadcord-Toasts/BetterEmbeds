@@ -137,6 +137,7 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                     )["url"])
                 ),
                 view=DeleteView(),
+                mention_author=False,
             )
 
 
