@@ -57,8 +57,8 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                 f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}.{file_ext}?ref={branch}",
                 headers=headers
             ) as response:
-                self.logger.debug(f"Fetching {response.url}")
                 if response.status != 200:
+                    self.logger.warning(f"Could not fetch file {response.url}: {response.status}")
                     continue
                 lines = (await response.text()).splitlines()
 
@@ -89,6 +89,7 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                 channel = guild.get_channel(int(channel_id))
                 linked_message = await channel.fetch_message(int(message_id))
             except (AttributeError, discord.NotFound):
+                self.logger.warning(f"Could not find message in {guild_id}/{channel_id}/{message_id}")
                 continue
 
             view = DeleteView()
@@ -111,7 +112,8 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
             track_id = match.group("id")
             try:
                 track = await self.spotify_api.fetch_track_data(track_id)
-            except BadResponseError:
+            except BadResponseError as error:
+                self.logger.warning(f"Could not get track data for track {track_id!r}: {error}")
                 continue
 
             def delta_to_str(delta: datetime.timedelta) -> str:
