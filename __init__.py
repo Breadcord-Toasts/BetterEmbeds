@@ -43,6 +43,9 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
             if not all((owner, repo, branch, file_path, l1)):
                 continue
 
+            start_i, end_i = match.span()
+            is_spoiler: bool = message.content[start_i-2:start_i] == "||" and message.content[end_i:end_i+2] == "||"
+
             headers = {"Accept": "application/vnd.github.raw"}
             if github_token := self.settings.github_token.value:
                 headers["Authorization"] = f"Bearer {github_token}"
@@ -61,6 +64,8 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
             indent = min(len(line) - len(line.lstrip()) for line in linked_lines if line.strip())
             code = "\n".join(line[indent:] for line in linked_lines)
             codeblock = f"```{file_ext or ''}\n{code}\n```"
+            if is_spoiler:
+                codeblock = f"||{codeblock}||"
 
             if not code or len(codeblock) > 2000:
                 return
