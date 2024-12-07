@@ -2,10 +2,10 @@ import re
 
 GITHUB_LINE_NUMBER_URL_REGEX = re.compile(
     r"""
-    (?:
-        (?<!\S)                         # Discard any match proceded by a non-space character
-        |                               # Or
-        (?<=<)                          # Discard any match not proceded by a "<" character
+    (?:                                 # Discard any match not proceded by
+        (?<!\S)                         # a non-space character
+        | (?<=<)                        # a "<" character
+        | (?<=\|\|)                     # a "||"
     )
     https?://github\.com/               
     (?P<owner>[\w\-.]+)/                # Repo owner
@@ -14,12 +14,12 @@ GITHUB_LINE_NUMBER_URL_REGEX = re.compile(
     (?P<file_path>.+?)                  # File path
     (?:\.(?P<file_ext>\w+))?            # Optional file extension
     (?:\?.+)?                           # Optional query string
-    \#L(?P<l1>[0-9]+)                      # Line number
-    (?:-L(?P<l2>[0-9]+))?                  # Optional ending line number
-    (?:
-        (?!\S)                          # Discard any match followed by a non-space character
-        |                               # Or
-        (?=>)                           # Discard any match not followed by a ">" character
+    \#L(?P<l1>[0-9]+)                   # Line number
+    (?:-L(?P<l2>[0-9]+))?               # Optional ending line number
+    (?:                                 # Discard any match not followed by
+        (?!\S)                          # a non-space character
+        | (?=>)                         # a ">" character
+        | (?=\|\|)                      # a "||"
     )
     """,
     flags=re.VERBOSE

@@ -44,7 +44,10 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                 continue
 
             start_i, end_i = match.span()
-            is_spoiler: bool = message.content[start_i-2:start_i] == "||" and message.content[end_i:end_i+2] == "||"
+            is_spoiler: bool = (
+                (message.content[start_i-2:start_i] == "||" and message.content[end_i:end_i+2] == "||")
+                or (message.content[start_i-3:start_i] == "||<" and message.content[end_i:end_i+3] == ">||")
+            )
 
             headers = {"Accept": "application/vnd.github.raw"}
             if github_token := self.settings.github_token.value:
