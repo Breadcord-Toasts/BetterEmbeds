@@ -77,6 +77,7 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                 codeblock,
                 mention_author=False,
                 view=view,
+                silent=True,
             )
 
     async def handle_message_url(self, message: discord.Message) -> None:
@@ -106,6 +107,7 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                 ),
                 mention_author=False,
                 view=view,
+                silent=True,
             )
 
 
