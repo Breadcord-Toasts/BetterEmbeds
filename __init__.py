@@ -1,3 +1,5 @@
+from io import StringIO
+
 import discord
 from discord.ext import commands
 
@@ -70,15 +72,31 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
             if is_spoiler:
                 codeblock = f"||{codeblock}||"
 
-            if not code or len(codeblock) > 2000:
+            if not code.strip():
+                return
+            max_msg_length = 2000
+            max_file_preview_lines = 100
+            if len(codeblock) > max_msg_length and len(linked_lines) > max_file_preview_lines:
                 return
             view = DeleteView()
-            await message.reply(
-                codeblock,
-                mention_author=False,
-                view=view,
-                silent=True,
-            )
+
+            if len(codeblock) > max_msg_length:
+                await message.reply(
+                    file=discord.File(
+                        fp=StringIO(code), 
+                        filename=f"preview.{file_ext}"
+                    ),
+                    mention_author=False,
+                    view=view,
+                    silent=True,
+                )
+            else:
+                await message.reply(
+                    codeblock,
+                    mention_author=False,
+                    view=view,
+                    silent=True,
+                )
 
     async def handle_message_url(self, message: discord.Message) -> None:
         for match in DISCORD_MESSAGE_URL_REGEX.finditer(message.content):
