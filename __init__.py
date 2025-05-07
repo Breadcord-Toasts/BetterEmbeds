@@ -1,3 +1,4 @@
+import json
 from io import StringIO
 
 import discord
@@ -80,19 +81,19 @@ class BetterEmbeds(breadcord.helpers.HTTPModuleCog):
                 return
             view = DeleteView()
 
-            if len(codeblock) > max_msg_length:
+            if len(codeblock) <= max_msg_length and len(linked_lines) <= 15:
+                await message.reply(
+                    content=codeblock,
+                    mention_author=False,
+                    view=view,
+                    silent=True,
+                )
+            elif len(linked_lines) <= max_file_preview_lines:
                 await message.reply(
                     file=discord.File(
                         fp=StringIO(code), 
                         filename=f"preview.{file_ext}"
                     ),
-                    mention_author=False,
-                    view=view,
-                    silent=True,
-                )
-            else:
-                await message.reply(
-                    codeblock,
                     mention_author=False,
                     view=view,
                     silent=True,
